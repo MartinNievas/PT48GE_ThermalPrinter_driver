@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "AccelStepper.h"
-#include "pibe.h"
+// #include "pibe.h"
+// #include "degrade.h"
+// #include "sushi.h"
+#include "cumple.h"
 
 int dst_pin = 16;
 int latch_pin = 17;
@@ -63,20 +66,23 @@ void loop()
 
   while (image_index < sizeof(imagen) - 48)
   {
-    for (unsigned int j = 0; j < 5; ++j)
+    for (unsigned int j = 0; j < 20; ++j)
     {
       for (int i = 0; i < 48; ++i)
       {
         SPI.write(imagen[image_index + i]);
       }
-      pin_sequence(-480);
+      pin_sequence(-100);
     }
     image_index += 48;
   }
+
+  // Ultima parte de la imagen en blanco
   for (int i = 0; i < 48; ++i)
   {
     SPI.write(0x00);
   }
+  pin_sequence(-200);
 
   // Espacio para separar la imagen
   size_t count = 0;
