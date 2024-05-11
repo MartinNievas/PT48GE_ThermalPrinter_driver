@@ -1,98 +1,50 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "AccelStepper.h"
-// #include "pibe.h"
+#include "PT48GE.hpp"
+#include "pibe.h"
 // #include "degrade.h"
 // #include "sushi.h"
-#include "cumple.h"
+// #include "cumple.h"
 
-int dst_pin = 16;
-int latch_pin = 17;
 SPIClass vspi = SPIClass(HSPI);
 
 #define MotorInterfaceType 4
 AccelStepper stepper = AccelStepper(MotorInterfaceType, 4, 0, 2, 15);
 
+PT48GE::PT48GE thermal_printer = PT48GE::PT48GE();
+
+void move_motor(void)
+{
+  stepper.setSpeed(-100);
+  stepper.runSpeed();
+}
+
 void setup()
 {
-  SPI.begin();
-
-  // Config SPI speed
-  SPI.setClockDivider(SPI_CLOCK_DIV16);
-  // Config pins
-  pinMode(dst_pin, OUTPUT);
-  pinMode(latch_pin, OUTPUT);
-
-  digitalWrite(SS, HIGH);
-  digitalWrite(dst_pin, LOW);
-  digitalWrite(latch_pin, HIGH);
+  thermal_printer.initialize();
+  thermal_printer.set_move_motor_function(move_motor);
 
   stepper.setMaxSpeed(1000);
 }
 
-void pin_sequence(float speed)
-{
-  delayMicroseconds(10);
-  digitalWrite(latch_pin, LOW);
-  delayMicroseconds(10);
-  digitalWrite(latch_pin, HIGH);
-  delayMicroseconds(30);
-  digitalWrite(dst_pin, HIGH);
-  delayMicroseconds(100);
-  digitalWrite(dst_pin, LOW);
-  stepper.setSpeed(speed);
-  stepper.runSpeed();
-}
-
-unsigned int line_buffer[12] = {0};
-
-void write_buffer_pixel_index(unsigned int index)
-{
-
-  // reset line buffer
-  for (int i = 0; i < 12; ++i)
-    line_buffer[i] = 0;
-  unsigned int char_index = index % 32;
-  unsigned int line_index = index / 32;
-  line_buffer[line_index] |= (0x1 << char_index);
-
-  for (int i = 12; i >= 0; --i)
-    SPI.write32(line_buffer[i]);
-}
-size_t image_index = 0;
-
 void loop()
 {
 
-  while (image_index < sizeof(imagen) - 48)
-  {
-    for (unsigned int j = 0; j < 20; ++j)
-    {
-      for (int i = 0; i < 48; ++i)
-      {
-        SPI.write(imagen[image_index + i]);
-      }
-      pin_sequence(-100);
-    }
-    image_index += 48;
-  }
+  // Imprimir imagen
+  // thermal_printer.print_pixel_from_array(imagen, sizeof(imagen));
 
-  // Ultima parte de la imagen en blanco
-  for (int i = 0; i < 48; ++i)
-  {
-    SPI.write(0x00);
-  }
-  pin_sequence(-200);
+
+  // Limpiar el buffer de la impresora
+  thermal_printer.clear_printer();
 
   // Espacio para separar la imagen
-  size_t count = 0;
-  while (count < 200)
+  for (size_t count = 0; count < 1000; ++count)
   {
-    count++;
-    stepper.setSpeed(-500);
-    stepper.runSpeed();
+    move_motor();
     delay(1);
   }
 
-  while (1);
+  while (1)
+    ;
 }
