@@ -19,9 +19,7 @@ namespace PT48GE
     {
 
         // Look for the index of the character in the font
-        static int count = 0;
-        unsigned int index_start = ((count+7)*8);//char_to_index(character);
-        count++;
+        unsigned int index_start = char_to_index(character);
 
         for (size_t i = 0; i < 8; ++i)
         {
@@ -132,11 +130,11 @@ namespace PT48GE
     void PT48GE::print_text(const char *text)
     {
         size_t col_index = 0;
-        for (size_t i = 0; i < 100; ++i)
+        for (size_t i = 0; i < strlen(text); ++i)
         {
             if (col_index < PT48GE_CHAR_BUFFER_LENGTH)
             {
-                insert_character('A', col_index);
+                insert_character(text[i], col_index);
                 col_index++;
             }
             else if (col_index == PT48GE_CHAR_BUFFER_LENGTH)
