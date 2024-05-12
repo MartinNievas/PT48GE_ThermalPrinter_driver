@@ -1,11 +1,62 @@
 #include <Arduino.h>
+#include "fonts.hpp"
 #include <SPI.h>
 #include <PT48GE.hpp>
+extern unsigned char ucFont[];
 
 namespace PT48GE
 {
     PT48GE::PT48GE(/* args */)
     {
+    }
+
+    unsigned int PT48GE::char_to_index(unsigned char character)
+    {
+        return (character - 32) * 8;
+    }
+
+    void PT48GE::insert_character(unsigned char character, unsigned int index)
+    {
+
+        // Look for the index of the character in the font
+        static int count = 0;
+        unsigned int index_start = ((count+7)*8);//char_to_index(character);
+        count++;
+
+        for (size_t i = 0; i < 8; ++i)
+        {
+            gBuffer[index + i * PT48GE_CHAR_BUFFER_LENGTH] = ucFont[i + index_start];
+        }
+    }
+
+    void PT48GE::print_gBuffer(void)
+    {
+        for (size_t i = 0; i < 8; ++i)
+        {
+            // Repeat 100 times to make the text more visible
+            for (size_t repeat = 0; repeat < 40; ++repeat)
+            {
+                for (size_t j = 0; j < PT48GE_CHAR_BUFFER_LENGTH; ++j)
+                {
+                    SPI.write(gBuffer[i * PT48GE_CHAR_BUFFER_LENGTH + j]);
+                }
+                pin_sequence();
+                move_motor_function_ptr();
+            }
+        }
+    }
+
+    void PT48GE::clear_gBuffer(void)
+    {
+        for (size_t i = 0; i < PT48GE_CHAR_BUFFER_LENGTH * 8; ++i)
+        {
+            gBuffer[i] = 0;
+        }
+        pin_sequence();
+        for (size_t i = 0; i < 100; ++i){
+            clear_printer();
+            move_motor_function_ptr();
+        }
     }
 
     void PT48GE::initialize(void)
@@ -23,6 +74,10 @@ namespace PT48GE
         digitalWrite(SS, HIGH);
         digitalWrite(dst_pin, LOW);
         digitalWrite(latch_pin, HIGH);
+
+        // Allocate memory for the text buffer
+        // 48 characters of: 8x8 bits
+        gBuffer = (unsigned char *)malloc(PT48GE_CHAR_BUFFER_LENGTH * 8);
     }
 
     void PT48GE::set_move_motor_function(void (*move_motor_function)(void))
@@ -58,27 +113,50 @@ namespace PT48GE
 
     void PT48GE::print_pixel_from_array(const unsigned char *imagen, size_t image_size)
     {
-
         size_t image_index = 0;
-        while (image_index < image_size - 48)
+        while (image_index < image_size - PT48GE_CHAR_BUFFER_LENGTH)
         {
             for (unsigned int j = 0; j < 20; ++j)
             {
-                for (int i = 0; i < 48; ++i)
+                for (int i = 0; i < PT48GE_CHAR_BUFFER_LENGTH; ++i)
                 {
                     SPI.write(imagen[image_index + i]);
                 }
                 pin_sequence();
                 move_motor_function_ptr();
             }
-            image_index += 48;
+            image_index += PT48GE_CHAR_BUFFER_LENGTH;
+        }
+    }
+
+    void PT48GE::print_text(const char *text)
+    {
+        size_t col_index = 0;
+        for (size_t i = 0; i < 100; ++i)
+        {
+            if (col_index < PT48GE_CHAR_BUFFER_LENGTH)
+            {
+                insert_character('A', col_index);
+                col_index++;
+            }
+            else if (col_index == PT48GE_CHAR_BUFFER_LENGTH)
+            {
+                print_gBuffer();
+                clear_gBuffer();
+                col_index = 0;
+            }
+        }
+        if (col_index > 0)
+        {
+            print_gBuffer();
+            clear_gBuffer();
         }
     }
 
     void PT48GE::clear_printer(void)
     {
         // Ultima parte de la imagen en blanco
-        for (int i = 0; i < 48; ++i)
+        for (int i = 0; i < PT48GE_CHAR_BUFFER_LENGTH; ++i)
         {
             SPI.write(0x00);
         }
