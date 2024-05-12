@@ -51,7 +51,8 @@ namespace PT48GE
             gBuffer[i] = 0;
         }
         pin_sequence();
-        for (size_t i = 0; i < 100; ++i){
+        for (size_t i = 0; i < 100; ++i)
+        {
             clear_printer();
             move_motor_function_ptr();
         }
