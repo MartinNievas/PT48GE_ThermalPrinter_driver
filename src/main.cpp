@@ -20,6 +20,15 @@ void move_motor(void)
   stepper.runSpeed();
 }
 
+void imprimir_espacio(void)
+{
+  for (size_t count = 0; count < 1000; ++count)
+  {
+    move_motor();
+    delay(1);
+  }
+}
+
 void setup()
 {
   thermal_printer.initialize();
@@ -32,22 +41,35 @@ void loop()
 {
 
   // Imprimir imagen
-  // thermal_printer.print_pixel_from_array(imagen, sizeof(imagen));
 
   // Probar función de imprimir texto
   const char *frase = "Esto es una frase muy larga para probar el funcionamiento de la impresora termica";
   thermal_printer.print_text(frase);
+  imprimir_espacio();
+  delay(1000);
 
+  const char *frase2 = "mmmm... funciona el texto...";
+  thermal_printer.print_text(frase2);
+  imprimir_espacio();
+  delay(1000);
+
+  const char *frase3 = "Y una imagen?...";
+  thermal_printer.print_text(frase3);
+  imprimir_espacio();
+  delay(1000);
+
+  thermal_printer.print_pixel_from_array(imagen, sizeof(imagen));
+  imprimir_espacio();
+
+  const char *frase4 = "cortar aquí---B<----Hooraay!----";
+  thermal_printer.print_text(frase4);
+  imprimir_espacio();
 
   // Limpiar el buffer de la impresora
   thermal_printer.clear_printer();
 
   // Espacio para separar la imagen
-  // for (size_t count = 0; count < 1000; ++count)
-  // {
-  //   move_motor();
-  //   delay(1);
-  // }
+  imprimir_espacio();
 
   while (1)
     ;
