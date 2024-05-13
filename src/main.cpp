@@ -42,26 +42,10 @@ void loop()
 
   // Imprimir imagen
 
-  // Probar función de imprimir texto
-  const char *frase = "Esto es una frase muy larga para probar el funcionamiento de la impresora termica";
-  thermal_printer.print_text(frase);
-  imprimir_espacio();
-  delay(1000);
-
-  const char *frase2 = "mmmm... funciona el texto...";
-  thermal_printer.print_text(frase2);
-  imprimir_espacio();
-  delay(1000);
-
-  const char *frase3 = "Y una imagen?...";
-  thermal_printer.print_text(frase3);
-  imprimir_espacio();
-  delay(1000);
-
   thermal_printer.print_pixel_from_array(imagen, sizeof(imagen));
   imprimir_espacio();
 
-  const char *frase4 = "cortar aquí---B<----Hooraay!----";
+  const char *frase4 = "CORTAR--AQUI-------B<--------";
   thermal_printer.print_text(frase4);
   imprimir_espacio();
 

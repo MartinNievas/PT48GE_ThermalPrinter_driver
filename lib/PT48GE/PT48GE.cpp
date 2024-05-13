@@ -32,7 +32,7 @@ namespace PT48GE
         for (size_t i = 0; i < 8; ++i)
         {
             // Repeat 100 times to make the text more visible
-            for (size_t repeat = 0; repeat < 40; ++repeat)
+            for (size_t repeat = 0; repeat < 60; ++repeat)
             {
                 for (size_t j = 0; j < PT48GE_CHAR_BUFFER_LENGTH; ++j)
                 {
