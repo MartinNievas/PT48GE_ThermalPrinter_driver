@@ -1,3 +1,6 @@
+/*
+  ESP32 demo to print images and text using PT48GE thermal printer
+*/
 #include <Arduino.h>
 #include <SPI.h>
 #include "AccelStepper.h"
@@ -25,8 +28,8 @@ const char *http_password = "admin";
 
 SPIClass vspi = SPIClass(HSPI);
 
-#define MotorInterfaceType 4
-AccelStepper stepper = AccelStepper(MotorInterfaceType, 4, 0, 2, 15);
+#define MotorInterfaceType 1
+AccelStepper stepper = AccelStepper(MotorInterfaceType, 2,15);
 
 PT48GE::PT48GE thermal_printer = PT48GE::PT48GE();
 String message = "";
@@ -34,7 +37,7 @@ String texto = "";
 
 void move_motor(void)
 {
-  stepper.setSpeed(-100);
+  stepper.setSpeed(-70);
   stepper.runSpeed();
 }
 
@@ -97,6 +100,15 @@ void loop()
   // Imprimir imagen
   if (message != "")
   {
+    thermal_printer.set_power(1000);
+    thermal_printer.print_text(message.c_str());
+    thermal_printer.set_power(500);
+    thermal_printer.print_text(message.c_str());
+    thermal_printer.set_power(300);
+    thermal_printer.print_text(message.c_str());
+    thermal_printer.set_power(200);
+    thermal_printer.print_text(message.c_str());
+    thermal_printer.set_power(150);
     thermal_printer.print_text(message.c_str());
     message = "";
 
@@ -109,6 +121,8 @@ void loop()
 
   if (texto != "")
   {
+
+    thermal_printer.set_power(500);
     thermal_printer.print_text(texto.c_str());
     texto = "";
 
