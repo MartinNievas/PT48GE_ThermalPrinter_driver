@@ -13,7 +13,7 @@ namespace PT48GE
         int latch_pin = 17;
         unsigned char *gBuffer = nullptr;
         unsigned int line_buffer[12] = {0};
-        unsigned int _strobe_duration_ms = 100;
+        unsigned int _strobe_pwm_duty = 100;
         void (*move_motor_function_ptr)(void);
         unsigned int char_to_index(unsigned char character);
         void insert_character(unsigned char character, unsigned int index);
