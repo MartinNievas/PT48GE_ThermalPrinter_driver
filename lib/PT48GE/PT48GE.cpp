@@ -84,6 +84,10 @@ namespace PT48GE
         move_motor_function_ptr = move_motor_function;
     }
 
+    void PT48GE::set_power(unsigned int power){
+        _strobe_duration_ms = power;
+    }
+
     void PT48GE::pin_sequence(void)
     {
         delayMicroseconds(10);
@@ -92,7 +96,7 @@ namespace PT48GE
         digitalWrite(latch_pin, HIGH);
         delayMicroseconds(30);
         digitalWrite(dst_pin, HIGH);
-        delayMicroseconds(100);
+        delayMicroseconds(_strobe_duration_ms);
         digitalWrite(dst_pin, LOW);
     }
 
