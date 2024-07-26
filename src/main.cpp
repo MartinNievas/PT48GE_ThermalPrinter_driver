@@ -9,14 +9,14 @@
 
 SPIClass vspi = SPIClass(HSPI);
 
-#define MotorInterfaceType 4
-AccelStepper stepper = AccelStepper(MotorInterfaceType, 4, 0, 2, 15);
+#define MotorInterfaceType 1
+AccelStepper stepper = AccelStepper(MotorInterfaceType, 15, 2);
 
 PT48GE::PT48GE thermal_printer = PT48GE::PT48GE();
 
 void move_motor(void)
 {
-  stepper.setSpeed(-100);
+  stepper.setSpeed(-400);
   stepper.runSpeed();
 }
 

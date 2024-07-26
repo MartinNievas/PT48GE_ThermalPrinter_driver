@@ -66,13 +66,17 @@ namespace PT48GE
         SPI.setClockDivider(SPI_CLOCK_DIV16);
 
         // Config pins
-        pinMode(dst_pin, OUTPUT);
+        // pinMode(dst_pin, OUTPUT);
         pinMode(latch_pin, OUTPUT);
 
         // Initialize pins to default state
         digitalWrite(SS, HIGH);
-        digitalWrite(dst_pin, LOW);
+        // digitalWrite(dst_pin, LOW);
         digitalWrite(latch_pin, HIGH);
+
+        //config PWM to 24KHz
+        analogWriteFrequency(8000);
+        // analogWriteResolution(8);
 
         // Allocate memory for the text buffer
         // 48 characters of: 8x8 bits
@@ -84,6 +88,12 @@ namespace PT48GE
         move_motor_function_ptr = move_motor_function;
     }
 
+    void PT48GE::set_power(unsigned int power){
+        if (power > 255)
+            power = 255;
+        _strobe_pwm_duty = power;
+    }
+
     void PT48GE::pin_sequence(void)
     {
         delayMicroseconds(10);
@@ -91,9 +101,12 @@ namespace PT48GE
         delayMicroseconds(10);
         digitalWrite(latch_pin, HIGH);
         delayMicroseconds(30);
-        digitalWrite(dst_pin, HIGH);
-        delayMicroseconds(100);
-        digitalWrite(dst_pin, LOW);
+
+        // digitalWrite(dst_pin, HIGH);
+        analogWrite(dst_pin, _strobe_pwm_duty);
+        delayMicroseconds(700);
+        analogWrite(dst_pin, 0);
+        // digitalWrite(dst_pin, LOW);
     }
 
     void PT48GE::write_buffer_pixel_index(unsigned int index)

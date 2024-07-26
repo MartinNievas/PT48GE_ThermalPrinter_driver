@@ -1,3 +1,6 @@
+/*
+  ESP32 demo to print images and text using PT48GE thermal printer
+*/
 #include <Arduino.h>
 #include <SPI.h>
 #include "AccelStepper.h"
@@ -5,6 +8,10 @@
 #include "secrets.h"
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
+#include <mona_1.h>
+#include <mona_2.h>
+#include <mona_3.h>
+#include <mona_dither.h>
 
 #include "PT48GE.hpp"
 
@@ -25,16 +32,22 @@ const char *http_password = "admin";
 
 SPIClass vspi = SPIClass(HSPI);
 
-#define MotorInterfaceType 4
-AccelStepper stepper = AccelStepper(MotorInterfaceType, 4, 0, 2, 15);
+#define MotorInterfaceType 1
+AccelStepper stepper = AccelStepper(MotorInterfaceType, 2,15);
 
 PT48GE::PT48GE thermal_printer = PT48GE::PT48GE();
 String message = "";
 String texto = "";
 
-void move_motor(void)
+void move_motor_forward(void)
 {
-  stepper.setSpeed(-100);
+  stepper.setSpeed(-70);
+  stepper.runSpeed();
+}
+
+void move_motor_backward(void)
+{
+  stepper.setSpeed(70);
   stepper.runSpeed();
 }
 
@@ -42,7 +55,7 @@ void imprimir_espacio(void)
 {
   for (size_t count = 0; count < 1000; ++count)
   {
-    move_motor();
+    move_motor_forward();
     delay(1);
   }
 }
@@ -50,7 +63,7 @@ void imprimir_espacio(void)
 void setup()
 {
   thermal_printer.initialize();
-  thermal_printer.set_move_motor_function(move_motor);
+  thermal_printer.set_move_motor_function(move_motor_forward);
 
   stepper.setMaxSpeed(1000);
   Serial.begin(115200);
@@ -97,7 +110,19 @@ void loop()
   // Imprimir imagen
   if (message != "")
   {
-    thermal_printer.print_text(message.c_str());
+
+    unsigned int potencia;
+    for (potencia = 80; potencia <= 255; potencia += 20){
+      Serial.println("Potencia: " + String(potencia));
+      thermal_printer.set_power(potencia);
+      thermal_printer.print_text(message.c_str());
+
+      thermal_printer.set_move_motor_function(move_motor_backward);
+      thermal_printer.print_text(" ");
+      thermal_printer.set_move_motor_function(move_motor_forward);
+      message = " " + message;
+    }
+
     message = "";
 
     // Limpiar el buffer de la impresora
@@ -109,7 +134,37 @@ void loop()
 
   if (texto != "")
   {
-    thermal_printer.print_text(texto.c_str());
+
+    //// ------------------------>> parte1
+    //thermal_printer.set_power(50);
+    //thermal_printer.print_pixel_from_array(mona1, sizeof(mona1));
+
+    //// Imprimir la imagen al revés sin potencia
+    //thermal_printer.set_move_motor_function(move_motor_backward);
+    //thermal_printer.set_power(0);
+    //thermal_printer.print_pixel_from_array(mona1, sizeof(mona1));
+
+    //// ------------------------>> parte2
+    //thermal_printer.set_power(60);
+    //thermal_printer.set_move_motor_function(move_motor_forward);
+    //thermal_printer.print_pixel_from_array(mona2, sizeof(mona2));
+
+    //// Imprimir la imagen al revés sin potencia
+    //thermal_printer.set_move_motor_function(move_motor_backward);
+    //thermal_printer.set_power(0);
+    //thermal_printer.print_pixel_from_array(mona2, sizeof(mona2));
+
+    //// ------------------------>> parte3
+    //thermal_printer.set_power(200);
+    //thermal_printer.set_move_motor_function(move_motor_forward);
+    //thermal_printer.print_pixel_from_array(mona3, sizeof(mona3));
+
+    // ------------------------>> dither
+    thermal_printer.set_power(200);
+    thermal_printer.set_move_motor_function(move_motor_forward);
+    thermal_printer.print_pixel_from_array(mona_dither, sizeof(mona_dither));
+
+
     texto = "";
 
     // Limpiar el buffer de la impresora
